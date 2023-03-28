@@ -13,6 +13,7 @@ import pandas as pd
 import plost
 import pytz
 import requests
+from PIL import Image
 from dateutil.relativedelta import relativedelta
 from folium.plugins import HeatMapWithTime, HeatMap
 from threading import local
@@ -186,7 +187,6 @@ def delete_substance(id):
     response = requests.delete(f"http://localhost:8000/guide/{id}", params=parameters)
     if response.status_code == 200:
         data = response.json()
-        #         # print(data)
         return data
 
 
@@ -201,7 +201,6 @@ def add_analyzer(name, city_id, latitude, longitude, description):
     response = requests.post("http://localhost:8000/gas_analyzers", json=data)
     if response.status_code == 200:
         data = response.json()
-        #         # print(data)
         return data
 
 
@@ -264,7 +263,6 @@ def generate_log(date, analyzer_name, value):
         "value": value,
         "text": f'{date} Датчик {analyzer_name} зафиксировал значение ПДК = {value} {warning_circle} {chr(10)} {chr(10)}'
     }
-        # f'{date} Датчик {pipe_name} зафиксировал значение = {value} {warning_circle} {chr(10)} {chr(10)}'
     )
 
 
@@ -287,6 +285,8 @@ def alert():
 if __name__ == "__main__":
     column_logs, column_settings = st.columns((4, 1))
     with st.sidebar:
+        image = Image.open('hselogo_fullsize.png')
+        st.image(image=image, width=50)
         choose = option_menu("ECO monitoring", ["About", "Simulation", "Plots", "Substances"],
                              icons=['house'], menu_icon="app-indicator", default_index=1,
                              styles={
@@ -302,7 +302,7 @@ if __name__ == "__main__":
         col1, col2 = st.columns([0.8, 0.2])
         with col1:
             st.markdown(""" <style> .font {
-                    font-size:35px ; font-family: 'Cooper Black';} 
+                    font-size:35px ; font-family: 'Cooper Black';}
                     </style> """, unsafe_allow_html=True)
             st.markdown('<p class="font">О приложении</p>', unsafe_allow_html=True)
             st.markdown(
@@ -355,8 +355,30 @@ if __name__ == "__main__":
                             </li>
                         </ul>
                         """, unsafe_allow_html=True)
-        
+            
         st.write('**************************************')
+        
+        footer = st.container()
+        with footer:
+            with col1:
+                st.image(image=image, width=100)
+            
+            with col2:
+                st.markdown("""<div style="display: flex; justify-content: flex-end">
+                                    <div>
+                                        <div>
+                                            Работу выполняли студенты 4 курса ПИ из НИУ ВШЭ:
+                                        </div>
+                                        <ul>
+                                            <li>Тимшин Михаил</li>
+                                            <li>Черницин Игорь</li>
+                                            <li>Костин Виктор</li>
+                                            <li>Шорохова Анжелика</li>
+                                            <li>Филатова Валерия</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            """, unsafe_allow_html=True)
     
     elif choose == "Simulation":
         wind_direction_variable = {
@@ -420,11 +442,6 @@ if __name__ == "__main__":
         ANALYZERS = get_gas_analyzers_data()
         COMPANIES = get_companies_data()
         
-        # pipe_lat = PIPES[3]['latitude']
-        # pipe_long = PIPES[3]['longitude']
-        #
-        # data, time_index = utils.createHeatmapData(pipe_lat=pipe_lat, pipe_long=pipe_long, wind_direction=259,
-        #                                            wind_speed=0)
         
         with column_settings:
             
@@ -435,31 +452,19 @@ if __name__ == "__main__":
                 analyzers_data = []
                 analyzers_names = []
                 flags = {}
+                
                 for analyzer in ANALYZERS:
                     analyzer_id = analyzer["measurement"][-1]
                     data = get_analyzer_data(analyzer_id, date_from=start_date, date_to=end_date)
-                    #                     # print(start_date)
-                    #                     # print(end_date)
-                    #                     # print(data)
-                    # analyzers_data.append({
-                    #     "measurement": analyzer["measurement"],
-                    #     "data": data
-                    # })
                     analyzers_data.extend(data)
-                    # analyzer_name = analyzer["measurement"]
-                    # analyzer_name = analyzer_name.split('_')
-                    # analyzer_name = ' '.join(analyzer_name.split('_'))
-                    # analyzer_name = analyzer_name.title()
-                    # analyzer_name = '_'.join(analyzer_name.split(' '))
                     analyzer_name = f"Gaz_Analyzer_{analyzer_id}"
                     analyzers_names.append(analyzer_name)
                     flags[f'{analyzer_name}'] = False
-                    
                     st.session_state.analyzers_dataframe[f'{analyzer_name}'] = 0
-                    # st.session_state.analyzers_dataframe['']
+                    
                 analyzers_data.sort(key=operator.itemgetter('_time'))
-                # analyzers_data = groupby(analyzers_data, operator.itemgetter('time'))
                 grouped_data = []
+                
                 for key, value in groupby(analyzers_data, key=operator.itemgetter('_time')):
                     grouped_data.append({"Date": key, "data": [k for k in value]})
                 
@@ -467,7 +472,6 @@ if __name__ == "__main__":
                 
                 for measurements in grouped_data:
                     new_row = {}
-                    # new_row["Date"] = measurements["Date"]
                     new_row["Date"] = datetime.fromisoformat(measurements["Date"])
                     for i in analyzers_names:
                         new_row[i] = 0
@@ -485,8 +489,6 @@ if __name__ == "__main__":
                             flags[f'{data["_measurement"]}'] = False
                             new_row[f'{data["_measurement"]}'] = data["value"]
                     
-                    #                     # print(new_row)
-                    # df.append(new_row, ignore_index=True)
                     st.session_state.analyzers_dataframe = st.session_state.analyzers_dataframe.append(new_row,
                                                                                                        ignore_index=True)
                 
@@ -495,28 +497,7 @@ if __name__ == "__main__":
                     info.success("Данные получены")
                     time.sleep(3)
                     info = st.empty()
-                    # create_action_log("Данные получены")
-            
-            #                 # print(st.session_state.analyzers_dataframe)
-            
-            # st.session_state.analyzers_dataframe = df
-            #                 # print(st.session_state.analyzers_dataframe)
-            # st.session_state.analyzers_data.extend(analyzers_data)
-            
-            # new_data = []
-            # analyzers_data = st.session_state.analyzers_data
-            
-            # try:
-            # for analyzer in analyzers_data:
-            # tuple_list = list(map(lambda x: (x["_time"], x["value"]), analyzer["data"]))
-            # grouped_data = [{"date": dt, "value": max(v for d, v in grp)} for dt, grp in
-            #                 groupby(tuple_list, key=lambda x: datetime.fromisoformat(x[0]).date())]
-            # analyzer["data"] = grouped_data
-            # new_data.append(analyzer)
-            # st.session_state.analyzers_data.clear()
-            # st.session_state.analyzers_data = new_data
-            # except KeyError:
-            #     pass
+                    
             
             time_delay = st.slider("Задержка симуляции sec.", min_value=1, max_value=300, value=1)
             st.session_state.time_delay = time_delay
@@ -525,61 +506,27 @@ if __name__ == "__main__":
                 st.session_state.logging = True
                 
                 analyzers_data = st.session_state.analyzers_dataframe.to_dict('records')
-                #                 # print(st.session_state.analyzers_dataframe)
-                #                 # print(analyzers_data)
-                #                 # print(analyzers_data)
                 
                 for measurement in analyzers_data:
-                    # date = datetime.fromisoformat(measurement["Date"]).strftime("%w-%m-%Y, %H:%M:%S")
-                    # date = measurement["Date"]
                     date = measurement["Date"].to_pydatetime()
                     date = str(date)[:-6]
                     
                     names = list(measurement.keys())[1:]
                     values = list(measurement.values())[1:]
                     for name, value in zip(names, values):
-                        #                         # print(value, type(value))
-                        if value > 0.8:
+                        if value > 0.5:
                             generate_log(date=date, analyzer_name=name, value=value)
-                        #                             # print(log)
                         else:
                             continue
                 
-                # info = st.empty()
-                # with info:
-                #     st.success("Симуляция готова")
-                #     time.sleep(2)
-                #     info.empty()
-                
-                # info = st.empty()
-                
-                # create_action_log("Симуляция готова")
-                # generate_log(date=date, pipe_name=name, value=value)
-                # dataframe[f'{measurement["_measurement"]}'] = measurement
-                # generate_log(date=date, pipe_name=measurement["_measurement"], value=measurement["value"])
-                # first_date = analyzer["data"][0]["date"]
-                # for index, data in enumerate(analyzer["data"]):
-                #     dt = data["date"]
-                #     if index == 0:
-                #         generate_log(date=data["date"], pipe_name=analyzer["measurement"], value=data["value"])
-                #     elif dt != first_date:
-                #         first_date = dt
-                #         generate_log(date=data["date"], pipe_name=analyzer["measurement"], value=data["value"])
-                #     elif dt == first_date:
-                #         continue
             selection_container = st.empty()
-            # with selection_container:
                 
             selection = st_btn_select(("Pause", "Play", "Stop"), key='1')
                 
             if selection == "Pause":
                     st.session_state.logging = False
-                    # create_action_log("Симуляция приостановлена")
-                #                 # print(st.session_state.logging)
             if selection == "Play":
                 st.session_state.logging = True
-                    # create_action_log("Симуляция запущена")
-                #                 # print(st.session_state.logging)
             if selection == "Stop":
                 st.session_state.logging = False
                 st.session_state.analyzers = list()
@@ -614,16 +561,12 @@ if __name__ == "__main__":
                 logs = []
                 time_delay = 0
             
-            # time_delay = st.session_state.time_delay
-            
             placeholder = st.empty()
             current_logs = []
             container = st.empty()
             with container:
                 if time_delay != 0:
-                    # warning_container = st.empty()
                     while st.session_state.logging:
-                        # placeholder = st.empty()
                         if len(st.session_state.current_logs) == 0:
                             warning_container = st.empty()
                             for index, log in enumerate(logs):
@@ -635,13 +578,10 @@ if __name__ == "__main__":
                                                           border=True, key=str(uuid.uuid4()))
                                 
                                 time.sleep(time_delay)
-                                # placeholder.empty()
                                 
                                 st.session_state.current_logs = current_logs
                                 
                                 if log["value"] >= 1:
-                                    # warning = st.empty()
-                                    # with warning_container:
                                     warning_container.error(f"Превышение на {log['analyzer_name']}. Симуляция приостановлена")
                                     time.sleep(3)
                                     
@@ -672,7 +612,6 @@ if __name__ == "__main__":
                                             with info:
                                                 info.info(f"Выброс поризошел из источника {pipe['measurement']}")
                                                 time.sleep(3)
-                                                # info = st.empty()
                                             
                                             data, time_index = utils.createHeatmapData(pipe_lat=pipe['latitude'],
                                                                                        pipe_long=pipe['longitude'],
@@ -685,48 +624,27 @@ if __name__ == "__main__":
                                             with info:
                                                 info.success(f"Данные получены, визуализация готова. Нажмите на кнопку паузы")
                                                 time.sleep(3)
-                                                # info = st.empty()
-                                        
-                                        # warning = st.empty()
                                     break
                             placeholder.empty()
                         else:
                             warning_container = st.empty()
-                            # placeholder = st.empty()
-                            # with placeholder:
-                            #     text = ''.join([x["text"] for x in st.session_state.current_logs[::-1]])
-                            #     stx.scrollableTextbox(text=text, height=400,
-                            #                           fontFamily='Helvetica', border=True, key=str(uuid.uuid4()))
                             logs = st.session_state.logs
                             current_logs = st.session_state.current_logs
-                            # logs = [x for x in current_logs if x not in logs]
-                            #                         # print(len(current_logs))
                             next_logs = logs[len(current_logs):]
                             for index, log in enumerate(next_logs):
                                 current_logs.append(log)
-                                # placeholder = st.empty()
                                 with placeholder:
-                                    #                                 # print(current_logs)
                                     text = ''.join([x["text"] for x in current_logs[::-1]])
                                     stx.scrollableTextbox(text=text, height=400,
                                                           fontFamily='Helvetica',
                                                           border=True, key=str(uuid.uuid4()))
                                 time.sleep(time_delay)
-                                # placeholder.empty()
-                                
-                                # current_logs.append(log)
                                 st.session_state.current_logs = current_logs
                                 
                                 if log["value"] >= 1:
-                                    # warning = st.empty()
                                     warning_container.error(
                                         f"Превышение на {log['analyzer_name']}. Симуляция приостановлена")
                                     time.sleep(3)
-                                    
-                                    # with warning:
-                                    #     warning.error(f"Превышение на {log['analyzer_name']}. Симуляция приостановлена")
-                                        
-                                        # time.sleep(3)
                                     info = st.empty()
                                     pipe = 0
                                     wind_direction = 0
@@ -768,8 +686,9 @@ if __name__ == "__main__":
                                             time.sleep(3)
                                             # info = st.empty()
 
-                                    warning = st.empty()
+                                    # warning = st.empty()
                                 break
+                        placeholder.empty()
                     
                 
                 if not st.session_state.logging:
@@ -778,10 +697,6 @@ if __name__ == "__main__":
                         stx.scrollableTextbox(text=text, height=400,
                                               fontFamily='Helvetica',
                                               border=True, key=str(uuid.uuid4()))
-                # text = ''.join([x["text"] for x in st.session_state.current_logs[::-1]])
-                # stx.scrollableTextbox(text=text, height=400,
-                #                       fontFamily='Helvetica',
-                #                       border=True, key=str(uuid.uuid4()))
         
         address = st.text_input('Введите адрес.')
         
@@ -838,8 +753,6 @@ if __name__ == "__main__":
                 for marker in wind_directions_markers:
                     wind_group.add_child(marker)
                 
-                # analyzers_group = folium.FeatureGroup(name='Analyzers').add_to(m)
-                
                 try:
                     data = st.session_state.heatmap_data['data']
                     time_index = st.session_state.heatmap_data['time_index']
@@ -865,9 +778,9 @@ if __name__ == "__main__":
     
     
     elif choose == "Plots":
-        PIPES = get_pipes_data()
+        # PIPES = get_pipes_data()
         ANALYZERS = get_gas_analyzers_data()
-        COMPANIES = get_companies_data()
+        # COMPANIES = get_companies_data()
         
         names = []
         for name in ANALYZERS:

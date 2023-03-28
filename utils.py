@@ -35,8 +35,6 @@ def createHeatmapData(pipe_lat, pipe_long, wind_direction, wind_speed):
             
             new_points.append([last_points[0][0] + step * math.cos(math.radians(wind_direction + spread_deg)),
                                last_points[0][1] + step * math.sin(math.radians(wind_direction + spread_deg))])
-            # print(new_points)
-            # print(last_points)
             new_points.extend([[point[0] + step * math.cos(math.radians(wind_direction)),
                                point[1] + step * math.sin(math.radians(wind_direction))] for point in last_points])
             
@@ -48,45 +46,6 @@ def createHeatmapData(pipe_lat, pipe_long, wind_direction, wind_speed):
         list = last_points.copy()
         list.extend(new_points)
         data.append(list)
-    
-    # for iteration in range(iterations):
-    #     last_points = data[-1].copy()
-    #     new_points = []
-    #     if len(last_points) == 1:
-    #         # new_points.extend([[last_points[0][0] + 0.0010 * math.cos(math.radians(wind_direction)), last_points[0][1]],
-    #         #                    [last_points[0][0] + 0.003 * math.cos(math.radians(wind_direction)),
-    #         #                     last_points[0][1] + 0.003 * math.sin(math.radians(wind_direction))],
-    #         #                    [last_points[0][0],
-    #         #                     last_points[0][1] + 0.0010 * math.sin(math.radians(wind_direction))]])
-    #         new_points.extend([[last_points[0][0] + step * math.cos(math.radians(wind_direction)), last_points[0][1] + step * math.sin(math.radians(wind_direction))],
-    #                           [last_points[0][0] + step * math.cos(math.radians(wind_direction + 10)), last_points[0][1] + step * math.sin(math.radians(wind_direction))],
-    #                           [last_points[0][0] + step * math.cos(math.radians(wind_direction - 10)), last_points[0][1] + step * math.sin(math.radians(wind_direction))]])
-    #     else:
-    #         # new_points.extend(
-    #         #     [[last_points[0][0] + 0.0010 * math.cos(math.radians(wind_direction)), last_points[0][1] + 0.0010 * math.sin(math.radians(wind_direction))]])
-    #         # new_points.extend(
-    #         #     [[last_points[0][0] + step * math.cos(math.radians(wind_direction)),
-    #         #       last_points[0][1] + step * math.sin(math.radians(wind_direction))]])
-    #         new_points.extend([last_points[0][0] + step * math.cos(math.radians(wind_direction + 10)), last_points[0][1] + step * math.sin(math.radians(wind_direction))])
-    #         print(new_points)
-    #         print(last_points)
-    #         new_points.extend([point[0] + step * math.cos(math.radians(wind_direction)), point[0] + step * math.sin(math.radians(wind_direction))] for point in last_points)
-    #         new_points.extend([last_points[-1][0] + step * math.cos(math.radians(wind_direction + 10)), last_points[-1][1] + step * math.sin(math.radians(wind_direction))])
-    #
-    #
-    #         # middle_list = last_points.copy()
-    #         # middle_points = []
-    #         # for point in middle_list:
-    #         #     middle_points.append([0.003 * math.cos(math.radians(wind_direction)) + x for x in point])
-    #         # new_points.extend(middle_points)
-    #         # new_points.append(
-    #         #     [last_points[-1][0] + step * math.cos(math.radians(wind_direction)), last_points[-1][1] + step * math.sin(math.radians(wind_direction))])
-    #
-    #     list = last_points.copy()
-    #     list.extend(new_points)
-    #     data.append(list)
-    
-    # print(data[-1])
     
     time_index = [(datetime.now() + k * timedelta(minutes=1)).strftime("%m/%d/%Y, %H:%M:%S") for k in
                   range(len(data))]
@@ -111,7 +70,6 @@ def compute_warning_pipe(analyzer_lat, analyzer_long, pipes, wind_direction):
             nearest_pipe = pipe
 
     warning_pipe = next(item for item in pipes if item['latitude'] == nearest_pipe[0] and item['longitude'] == nearest_pipe[1])
-    # print(warning_pipe)
     pipe_id = warning_pipe['measurement'][-1]
     
     return warning_pipe
